@@ -39,3 +39,21 @@ Path("results").mkdir(exist_ok=True)
 plt.savefig("results/eurusd_close_chart.png", dpi=150)
 
 plt.show()
+# Check time gaps between candles
+df["time_gap_minutes"] = df["time"].diff().dt.total_seconds() / 60
+
+gaps = df[df["time_gap_minutes"] > 1]
+
+print("\nGaps larger than 1 minute:")
+print(gaps[["time", "time_gap_minutes"]].head(20))
+
+# Check candles where price did not change from the previous minute
+df["same_close_as_previous"] = df["close"].eq(df["close"].shift())
+
+print("\nRows with unchanged close:")
+print(df["same_close_as_previous"].sum())
+
+# Show the largest sequences / suspicious rows
+flat_rows = df[df["same_close_as_previous"]]
+print("\nExample flat rows:")
+print(flat_rows[["time", "open", "high", "low", "close", "tick_volume"]].head(10))
